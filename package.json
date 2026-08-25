@@ -1,0 +1,36 @@
+{
+	"name": "maya-ticzon-martech",
+	"version": "0.0.1",
+	"description": "Money remittance module",
+	"homepage": "https://github.com/AdrielTiczon/maya-ticzon-martech#readme",
+	"bugs": {
+		"url": "https://github.com/AdrielTiczon/maya-ticzon-martech/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AdrielTiczon/maya-ticzon-martech.git"
+	},
+	"license": "ISC",
+	"author": "AJ Ticzon",
+	"type": "module",
+	"main": "index.ts",
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"scripts": {
+		"start": "node index.ts",
+		"lint": "biome format",
+		"lint:fix": "biome format --write",
+		"test": "npm run test"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.10",
+		"@types/express": "^5.0.6",
+		"@types/node": "^26.3.0",
+		"dbmate": "^2.35.0",
+		"typescript": "^7.0.2"
+	},
+	"dependencies": {
+		"express": "^5.2.1"
+	}
+}

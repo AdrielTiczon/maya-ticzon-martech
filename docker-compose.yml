@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    container_name: api-gateway
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - db
+    command: sh -c "npx dbmate up && npx tsx watch index.ts"
+
+  db:
+    image: postgres:18
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-app_db}
+    ports:
+      - "${DB_HOST_PORT:-5433}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql
+
+volumes:
+  pg_data:
