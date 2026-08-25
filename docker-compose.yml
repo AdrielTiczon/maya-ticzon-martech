@@ -9,8 +9,11 @@ services:
       - /app/node_modules
     env_file:
       - .env
+    environment: 
+      - TZ=Asia/Manila
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: sh -c "npx dbmate up && npx tsx watch index.ts"
 
   db:
@@ -21,10 +24,17 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-app_db}
+      TZ: Asia/Manila
+      PGTZ: Asia/Manila
     ports:
       - "${DB_HOST_PORT:-5433}:5432"
     volumes:
       - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-app_db}"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
 
 volumes:
   pg_data:
