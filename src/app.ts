@@ -2,9 +2,9 @@ import express, { type Express, type Request, type Response } from "express";
 
 import usersController from "./controllers/users.controller.ts";
 import {
-	apiKeyAuthMiddleware,
-	errorHandlerMiddleware,
-	emptyRoutesMiddleware,
+  apiKeyAuthMiddleware,
+  errorHandlerMiddleware,
+  emptyRoutesMiddleware,
 } from "./middlewares/index.ts";
 
 const app: Express = express();
@@ -13,8 +13,8 @@ const app: Express = express();
 app.use(express.json()); // Used for POST requests that utilizes body
 
 app.get("/health", (req: Request, res: Response) => {
-	console.info("[INFO] ENDPOINT: `/health`", { health: "OK" });
-	res.status(200).send("OK");
+  console.info("[INFO] ENDPOINT: `/health`", { health: "OK" });
+  res.status(200).send("OK");
 });
 
 app.use("/users", apiKeyAuthMiddleware, usersController);
