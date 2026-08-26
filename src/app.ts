@@ -1,4 +1,7 @@
 import express, { type Express, type Request, type Response } from "express";
+import swaggerUi from "swagger-ui-express";
+
+import openApiSpec from "../docs/openapi.json" with { type: "json" };
 
 import usersController from "./controllers/users.controller.ts";
 import {
@@ -21,6 +24,8 @@ app.use("/users", apiKeyAuthMiddleware, usersController);
 // TODO: auth
 // TODO: remittance controller
 // app.use("/remittance", jwtAuthMiddleware, remittanceController)
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 // -- Error Middlewares --
 app.use(emptyRoutesMiddleware); // Handles routes that do not exist
