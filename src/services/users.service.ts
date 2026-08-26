@@ -1,4 +1,4 @@
-import { UsersRepository } from "../repositories/users.repository.js";
+import UsersRepository from "../repositories/users.repository.js";
 import pool from "../database/pool.ts";
 
 const usersRepository = new UsersRepository(pool);
