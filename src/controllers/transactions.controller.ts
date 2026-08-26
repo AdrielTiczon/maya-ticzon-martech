@@ -41,7 +41,7 @@ transactionsController.post(
       amount,
     );
 
-    res.status(200).send(presentTransaction(result));
+    res.status(201).send(presentTransaction(result));
   },
 );
 

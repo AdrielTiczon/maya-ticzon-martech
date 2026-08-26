@@ -77,14 +77,14 @@ export default class TransactionsService {
       if (newMonthlyUsage > limits.monthlyLimit!)
         throw unprocessable(
           "MONTHLY_LIMIT_EXCEEDED",
-          "You amount you requested exceeds your monthly request.",
+          "The amount requested exceeds your remaining monthly limit.",
         );
 
       const newDailyUsage = usage.daily + amount;
       if (newDailyUsage > limits.dailyLimit!)
         throw unprocessable(
           "DAILY_LIMIT_EXCEEDED",
-          "You amount you requested exceeds your daily request.",
+          "The amount requested exceeds your remaining daily limit.",
         );
 
       const receiver =
