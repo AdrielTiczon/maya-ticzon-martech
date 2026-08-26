@@ -58,53 +58,58 @@ export default class TransactionsService {
     };
   }
 
-  send(senderId: string, receiverMobileNumber: string, amount: number) {
+  async send(senderId: string, receiverMobileNumber: string, amount: number) {
+    // Request validity. Nothing here needs the lock, so fail before taking it.
+    const receiver =
+      await usersRepository.findByMobileNumber(receiverMobileNumber);
+
+    if (!receiver) {
+      throw badRequest(
+        "INVALID_RECEIVER",
+        "The receiver either doesn't exist or is invalid.",
+      );
+    }
+
+    if (senderId === receiver.id) {
+      throw badRequest("INVALID_REQUEST", "Self transfers are not allowed.");
+    }
+
+    // Only what must be atomic goes inside.
     return withTransaction(async (client) => {
       const limits = await transferLimitsRepository.getUserTransferLimits({
         userId: senderId,
         lock: true,
         db: client,
       });
-      if (!limits)
+
+      if (!limits) {
         throw unprocessable(
-          "UNPROCESSABLE",
-          "The sender has no limits configured.",
+          "LIMITS_NOT_CONFIGURED",
+          "No transfer limits are configured for this account.",
         );
+      }
 
       const usage = await transactionsRepository.getUsage(senderId, client);
 
-      const newMonthlyUsage = usage.monthly + amount;
-      if (newMonthlyUsage > limits.monthlyLimit!)
-        throw unprocessable(
-          "MONTHLY_LIMIT_EXCEEDED",
-          "The amount requested exceeds your remaining monthly limit.",
-        );
-
-      const newDailyUsage = usage.daily + amount;
-      if (newDailyUsage > limits.dailyLimit!)
+      // Caps are inclusive: a transfer landing exactly on the limit is allowed.
+      if (usage.daily + amount > limits.dailyLimit) {
         throw unprocessable(
           "DAILY_LIMIT_EXCEEDED",
           "The amount requested exceeds your remaining daily limit.",
         );
+      }
 
-      const receiver =
-        await usersRepository.findByMobileNumber(receiverMobileNumber);
-      if (!receiver)
-        throw badRequest(
-          "INVALID_RECEIVER",
-          `The receiver either doesn't exist or is invalid.`,
+      if (usage.monthly + amount > limits.monthlyLimit) {
+        throw unprocessable(
+          "MONTHLY_LIMIT_EXCEEDED",
+          "The amount requested exceeds your remaining monthly limit.",
         );
-      if (senderId === receiver.id)
-        throw badRequest("INVALID_REQUEST", `Self transfers are not allowed.`);
+      }
 
-      const transaction: CreatePayload = {
-        senderId,
-        receiverId: receiver.id,
-        amount,
-      };
-      const result = await transactionsRepository.create(transaction, client);
-
-      return result;
+      return transactionsRepository.create(
+        { senderId, receiverId: receiver.id, amount },
+        client,
+      );
     });
   }
 }

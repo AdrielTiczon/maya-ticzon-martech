@@ -23,3 +23,5 @@ export const sendSchema = z.object({
     .transform(toCentavos)
     .refine((c) => c > 0, "must be greater than zero"),
 });
+
+export type SendInput = z.infer<typeof sendSchema>;
