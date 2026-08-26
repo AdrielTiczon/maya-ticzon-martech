@@ -1,2 +1,2 @@
-export { default as authController } from "./auth.controller.ts";
-export { default as transactionsController } from "./transactions.controller.ts";
+export { default as authController } from "#controllers/auth.controller";
+export { default as transactionsController } from "#controllers/transactions.controller";

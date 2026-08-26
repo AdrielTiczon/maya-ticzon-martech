@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   formatMobileNumber,
   isValidMobileNumber,
-} from "../utils/formatMobileNumber.ts";
+} from "#utils/formatMobileNumber";
 
 export const loginSchema = z.object({
   mobileNumber: z

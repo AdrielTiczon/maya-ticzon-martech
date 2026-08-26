@@ -1,3 +1,3 @@
-export { jwtAuthMiddleware } from "./auth.middleware.ts";
-export { default as emptyRoutesMiddleware } from "./emptyRoutes.middleware.ts";
-export { default as errorHandlerMiddleware } from "./errorHandler.middleware.ts";
+export { jwtAuthMiddleware } from "#middlewares/auth.middleware";
+export { default as emptyRoutesMiddleware } from "#middlewares/emptyRoutes.middleware";
+export { default as errorHandlerMiddleware } from "#middlewares/errorHandler.middleware";

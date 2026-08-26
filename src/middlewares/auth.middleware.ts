@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { verifyAccessToken } from "../services/token.service.ts";
-import { unauthorized } from "../utils/errors.ts";
+import { verifyAccessToken } from "#services/token.service";
+import { unauthorized } from "#utils/errors";
 
 export function jwtAuthMiddleware(
   req: Request,

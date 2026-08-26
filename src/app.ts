@@ -2,14 +2,14 @@ import express, { type Express, type Request, type Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import cookieParser from "cookie-parser";
 
-import openApiSpec from "../docs/openapi.json" with { type: "json" };
+import openApiSpec from "#docs/openapi.json" with { type: "json" };
 
 import {
   jwtAuthMiddleware,
   errorHandlerMiddleware,
   emptyRoutesMiddleware,
-} from "./middlewares/index.ts";
-import { authController, transactionsController } from "./controllers/index.ts";
+} from "#middlewares/index";
+import { authController, transactionsController } from "#controllers/index";
 
 const app: Express = express();
 

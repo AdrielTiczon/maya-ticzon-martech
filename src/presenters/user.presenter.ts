@@ -1,4 +1,4 @@
-import type { User } from "../repositories/users.repository.ts";
+import type { User } from "#repositories/users.repository";
 
 export type UserResponse = { id: string; name: string; mobileNumber: string };
 

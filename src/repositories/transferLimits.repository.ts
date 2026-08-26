@@ -1,4 +1,4 @@
-import { BaseRepository, type DbTypes } from "./base.repository.ts";
+import { BaseRepository, type DbTypes } from "#repositories/base.repository";
 
 export type GetUserTransferIdPayload = {
   userId: string;

@@ -1,4 +1,4 @@
-import { badRequest } from "./errors.ts";
+import { badRequest } from "#utils/errors";
 
 const PH_MOBILE = /^(?:\+63|63|0)?(9\d{9})$/;
 

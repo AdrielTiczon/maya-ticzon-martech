@@ -1,12 +1,12 @@
 import { Router, type Request, type Response } from "express";
-import TransactionsService from "../services/transactions.service.ts";
-import { sendSchema, type SendInput } from "../schemas/transactions.schema.ts";
-import { validate } from "../middlewares/validate.middleware.ts";
+import TransactionsService from "#services/transactions.service";
+import { sendSchema, type SendInput } from "#schemas/transactions.schema";
+import { validate } from "#middlewares/validate.middleware";
 import {
   presentTransaction,
   presentTransactionHistory,
   presentUsage,
-} from "../presenters/transaction.presenter.ts";
+} from "#presenters/transaction.presenter";
 
 const transactionsController = Router();
 const transactionsService = new TransactionsService();

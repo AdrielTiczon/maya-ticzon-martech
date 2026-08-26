@@ -1,11 +1,11 @@
-import pool from "../database/pool.ts";
-import { withTransaction } from "../database/transaction.ts";
+import pool from "#database/pool";
+import { withTransaction } from "#database/transaction";
 import TransactionsRepository, {
   type CreatePayload,
-} from "../repositories/transactions.repository.ts";
-import { TransferLimitsRepository } from "../repositories/transferLimits.repository.ts";
-import UsersRepository from "../repositories/users.repository.ts";
-import { badRequest, unprocessable } from "../utils/errors.ts";
+} from "#repositories/transactions.repository";
+import { TransferLimitsRepository } from "#repositories/transferLimits.repository";
+import UsersRepository from "#repositories/users.repository";
+import { badRequest, unprocessable } from "#utils/errors";
 
 const transferLimitsRepository = new TransferLimitsRepository(pool);
 const usersRepository = new UsersRepository(pool);

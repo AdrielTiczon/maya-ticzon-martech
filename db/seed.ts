@@ -1,6 +1,6 @@
 import argon2 from "argon2";
-import pool from "../src/database/pool.ts";
-import { formatMobileNumber } from "../src/utils/formatMobileNumber.ts";
+import pool from "#database/pool";
+import { formatMobileNumber } from "#utils/formatMobileNumber";
 
 type SeedUser = {
   name: string;

@@ -1,8 +1,8 @@
 import argon2 from "argon2";
-import pool from "../database/pool.ts";
-import UsersRepository from "../repositories/users.repository.ts";
-import { signAccessToken } from "./token.service.ts";
-import { unauthorized } from "../utils/errors.ts";
+import pool from "#database/pool";
+import UsersRepository from "#repositories/users.repository";
+import { signAccessToken } from "#services/token.service";
+import { unauthorized } from "#utils/errors";
 
 const usersRepository = new UsersRepository(pool);
 

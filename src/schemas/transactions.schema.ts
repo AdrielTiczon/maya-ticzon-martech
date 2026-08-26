@@ -2,8 +2,8 @@ import { z } from "zod";
 import {
   formatMobileNumber,
   isValidMobileNumber,
-} from "../utils/formatMobileNumber.ts";
-import { isValidAmount, toCentavos } from "../utils/money.ts";
+} from "#utils/formatMobileNumber";
+import { isValidAmount, toCentavos } from "#utils/money";
 
 export const sendSchema = z.object({
   receiverMobileNumber: z

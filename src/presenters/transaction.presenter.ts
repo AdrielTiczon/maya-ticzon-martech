@@ -1,6 +1,6 @@
-import type { Transaction } from "../repositories/transactions.repository.ts";
-import type { LimitUsage, Period } from "../services/transactions.service.ts";
-import { toDecimalString } from "../utils/money.ts";
+import type { Transaction } from "#repositories/transactions.repository";
+import type { LimitUsage, Period } from "#services/transactions.service";
+import { toDecimalString } from "#utils/money";
 
 export type TransactionResponse = {
   id: string;

@@ -17,6 +17,17 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "imports": {
+    "#controllers/*": "./src/controllers/*.ts",
+    "#database/*": "./src/database/*.ts",
+    "#middlewares/*": "./src/middlewares/*.ts",
+    "#presenters/*": "./src/presenters/*.ts",
+    "#repositories/*": "./src/repositories/*.ts",
+    "#schemas/*": "./src/schemas/*.ts",
+    "#services/*": "./src/services/*.ts",
+    "#utils/*": "./src/utils/*.ts",
+    "#docs/*": "./docs/*"
+  },
   "scripts": {
     "start": "node index.ts",
     "dev": "tsx watch index.ts",
