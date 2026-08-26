@@ -13,10 +13,6 @@ export function formatMobileNumber(input: string): string {
   return `63${match[1]}`; // 639171234567
 }
 
-export function toLocalFormat(msisdn: string): string {
-  return `0${msisdn.slice(2)}`; // 09171234567
-}
-
 export function isValidMobileNumber(input: string): boolean {
   return PH_MOBILE.test(input.replace(/[\s()-]/g, ""));
 }
