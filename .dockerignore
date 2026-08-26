@@ -1,6 +1,11 @@
 node_modules
 npm-debug.log
-dist
 .git
+.gitignore
 .env
- 
+.env.example
+
+# docs/openapi.json is imported by src/app.ts, so only the prose is excluded
+docs/*.md
+test
+README.md
