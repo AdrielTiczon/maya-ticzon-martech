@@ -11,7 +11,7 @@ import {
 const transactionsController = Router();
 const transactionsService = new TransactionsService();
 
-// Get transaction history
+// Transaction history
 transactionsController.get("/", async (req: Request, res: Response) => {
   const result = await transactionsService.getHistoryByUser(
     req.userId!,
@@ -23,19 +23,19 @@ transactionsController.get("/", async (req: Request, res: Response) => {
   res.status(200).send(presentTransactionHistory(result));
 });
 
-// Get usage
+// Transactions daily/monthly usage
 transactionsController.get("/usage", async (req, res) => {
   const usage = await transactionsService.getUsage(req.userId!);
   res.status(200).send(presentUsage(usage));
 });
 
-// Creating the transactions
+// Transfer money
 transactionsController.post(
   "/",
   validate(sendSchema),
   async (req: Request, res: Response) => {
     const { receiverMobileNumber, amount } = req.validated!.body as SendInput;
-    const result = await transactionsService.send(
+    const result = await transactionsService.sendMoney(
       req.userId!,
       receiverMobileNumber,
       amount,

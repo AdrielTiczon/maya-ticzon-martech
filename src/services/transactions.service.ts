@@ -58,7 +58,7 @@ export default class TransactionsService {
     };
   }
 
-  async send(senderId: string, receiverMobileNumber: string, amount: number) {
+  async sendMoney(senderId: string, receiverMobileNumber: string, amount: number) {
     // Request validity. Nothing here needs the lock, so fail before taking it.
     const receiver =
       await usersRepository.findByMobileNumber(receiverMobileNumber);
