@@ -14,7 +14,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npx dbmate up && npx tsx watch index.ts"
+    command: sh -c "npm run db:migration-up && npm run db:seed && npm run dev"
 
   db:
     image: postgres:18

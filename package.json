@@ -19,8 +19,12 @@
   },
   "scripts": {
     "start": "node index.ts",
+    "dev": "tsx watch index.ts",
     "lint": "biome format",
     "lint:fix": "biome format --write",
+    "db:migration-up": "dbmate up",
+    "db:migration-down": "dbmate down",
+    "db:seed": "tsx db/seed.ts",
     "test": "tsx --test test/*.test.ts"
   },
   "devDependencies": {
