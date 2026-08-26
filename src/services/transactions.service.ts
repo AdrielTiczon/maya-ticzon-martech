@@ -11,6 +11,9 @@ const transferLimitsRepository = new TransferLimitsRepository(pool);
 const usersRepository = new UsersRepository(pool);
 const transactionsRepository = new TransactionsRepository(pool);
 
+export type Period = { limit: number; used: number; remaining: number };
+export type LimitUsage = { daily: Period; monthly: Period };
+
 export default class TransactionsService {
   async getHistoryByUser(
     userId: string,
@@ -28,23 +31,31 @@ export default class TransactionsService {
     return result;
   }
 
-  async getUsage(userId: string) {
+  async getUsage(userId: string): Promise<LimitUsage> {
     const usage = await transactionsRepository.getUsage(userId);
     const limits = await transferLimitsRepository.getUserTransferLimits({
       userId,
     });
 
-    const remainingBudget = {
-      daily: limits?.dailyLimit! - usage.daily,
-      monthly: limits?.monthlyLimit! - usage.monthly,
-    };
+    if (!limits) {
+      throw unprocessable(
+        "LIMITS_NOT_CONFIGURED",
+        "No transfer limits are configured for this account.",
+      );
+    }
 
-    const limitsFormatted = {
-      daily: limits?.dailyLimit!,
-      monthly: limits?.monthlyLimit!,
+    return {
+      daily: {
+        limit: limits.dailyLimit!,
+        used: usage.daily,
+        remaining: limits.dailyLimit! - usage.daily,
+      },
+      monthly: {
+        limit: limits.monthlyLimit!,
+        used: usage.monthly,
+        remaining: limits.monthlyLimit! - usage.monthly,
+      },
     };
-
-    return { usage, remainingBudget, limits: limitsFormatted };
   }
 
   send(senderId: string, receiverMobileNumber: string, amount: number) {
@@ -70,7 +81,6 @@ export default class TransactionsService {
         );
 
       const newDailyUsage = usage.daily + amount;
-      console.log({ newDailyUsage });
       if (newDailyUsage > limits.dailyLimit!)
         throw unprocessable(
           "DAILY_LIMIT_EXCEEDED",

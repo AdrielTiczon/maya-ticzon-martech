@@ -4,15 +4,13 @@ import cookieParser from "cookie-parser";
 
 import openApiSpec from "../docs/openapi.json" with { type: "json" };
 
-import usersController from "./controllers/users.controller.ts";
 import {
+  jwtAuthMiddleware,
   apiKeyAuthMiddleware,
   errorHandlerMiddleware,
   emptyRoutesMiddleware,
 } from "./middlewares/index.ts";
-import authController from "./controllers/auth.controller.ts";
-import transactionsController from "./controllers/transactions.controller.ts";
-import jwtAuthMiddleware from "./middlewares/auth.middleware.ts";
+import { authController, transactionsController } from "./controllers/index.ts";
 
 const app: Express = express();
 
@@ -26,12 +24,9 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 app.use("/auth", apiKeyAuthMiddleware, authController);
-app.use("/users", apiKeyAuthMiddleware, usersController);
 app.use("/transactions", jwtAuthMiddleware, transactionsController);
-// TODO: auth
-// TODO: remittance controller
-// app.use("/remittance", jwtAuthMiddleware, remittanceController)
 
+// -- SwaggerUI (OpenAPI document) --
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 // -- Error Middlewares --

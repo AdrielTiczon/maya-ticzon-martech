@@ -1,5 +1,5 @@
 export {
-  default as authMiddleware,
+  jwtAuthMiddleware,
   apiKeyAuthMiddleware,
 } from "./auth.middleware.ts";
 export { default as emptyRoutesMiddleware } from "./emptyRoutes.middleware.ts";

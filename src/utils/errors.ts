@@ -1,4 +1,8 @@
-export type ErrorCause = { statusCode: number; code: string; message: string };
+export type ErrorCause = {
+  statusCode: number;
+  code: string;
+  message: string;
+};
 
 const httpError = (statusCode: number, code: string, message: string) =>
   new Error(`${code}: ${message}`, {

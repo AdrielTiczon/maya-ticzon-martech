@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
+import { notFound } from "../utils/errors.ts";
 
-export default function emptyRoutesMiddleware(_req: Request, res: Response) {
-  res.status(404).send({
-    code: "NOT_FOUND",
-    message: "Resource not found.",
-  });
+export default function emptyRoutesMiddleware(_req: Request, _res: Response) {
+  throw notFound("NOT_FOUND", "Resource not found.");
 }

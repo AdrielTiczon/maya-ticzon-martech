@@ -2,7 +2,11 @@ import { Router, type Request, type Response } from "express";
 import TransactionsService from "../services/transactions.service.ts";
 import { sendSchema } from "../schemas/transactions.schema.ts";
 import { validate } from "../middlewares/validate.middleware.ts";
-import { presentTransaction } from "../presenters/transaction.presenter.ts";
+import {
+  presentTransaction,
+  presentTransactionHistory,
+  presentUsage,
+} from "../presenters/transaction.presenter.ts";
 
 const transactionsController = Router();
 const transactionsService = new TransactionsService();
@@ -16,14 +20,13 @@ transactionsController.get("/", async (req: Request, res: Response) => {
     Number(req.query.offset ?? 0),
   );
 
-  res.status(200).send(result);
+  res.status(200).send(presentTransactionHistory(result));
 });
 
 // Get usage
-transactionsController.get("/usage", async (req: Request, res: Response) => {
-  const result = await transactionsService.getUsage(req.userId!);
-
-  res.status(200).send(result);
+transactionsController.get("/usage", async (req, res) => {
+  const usage = await transactionsService.getUsage(req.userId!);
+  res.status(200).send(presentUsage(usage));
 });
 
 // Creating the transactions
