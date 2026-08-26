@@ -6,7 +6,6 @@ import openApiSpec from "../docs/openapi.json" with { type: "json" };
 
 import {
   jwtAuthMiddleware,
-  apiKeyAuthMiddleware,
   errorHandlerMiddleware,
   emptyRoutesMiddleware,
 } from "./middlewares/index.ts";
@@ -23,7 +22,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).send("OK");
 });
 
-app.use("/auth", apiKeyAuthMiddleware, authController);
+app.use("/auth", authController);
 app.use("/transactions", jwtAuthMiddleware, transactionsController);
 
 // -- SwaggerUI (OpenAPI document) --

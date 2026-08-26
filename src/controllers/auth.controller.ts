@@ -1,7 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import AuthService from "../services/auth.service.ts";
 import { ACCESS_TOKEN_TTL_SECONDS } from "../services/token.service.ts";
-import { loginSchema } from "../schemas/auth.schema.ts";
+import { validate } from "../middlewares/validate.middleware.ts";
+import { loginSchema, type LoginInput } from "../schemas/auth.schema.ts";
 import { presentUser } from "../presenters/user.presenter.ts";
 
 const authController = Router();
@@ -13,18 +14,22 @@ const COOKIE_OPTIONS = {
   path: "/",
 } as const;
 
-authController.post("/login", async (req: Request, res: Response) => {
-  const { mobileNumber, mpin } = loginSchema.parse(req.body);
+authController.post(
+  "/login",
+  validate(loginSchema),
+  async (req: Request, res: Response) => {
+    const { mobileNumber, mpin } = req.validated!.body as LoginInput;
 
-  const { user, accessToken } = await authService.login(mobileNumber, mpin);
+    const { user, accessToken } = await authService.login(mobileNumber, mpin);
 
-  res.cookie("access_token", accessToken, {
-    ...COOKIE_OPTIONS,
-    maxAge: ACCESS_TOKEN_TTL_SECONDS * 1000,
-  });
+    res.cookie("access_token", accessToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: ACCESS_TOKEN_TTL_SECONDS * 1000,
+    });
 
-  res.status(200).send({ data: presentUser(user) });
-});
+    res.status(200).send({ data: presentUser(user) });
+  },
+);
 
 authController.post("/logout", (_req: Request, res: Response) => {
   res.clearCookie("access_token", COOKIE_OPTIONS);

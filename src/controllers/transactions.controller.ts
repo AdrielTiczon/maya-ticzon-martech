@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import TransactionsService from "../services/transactions.service.ts";
-import { sendSchema } from "../schemas/transactions.schema.ts";
+import { sendSchema, type SendInput } from "../schemas/transactions.schema.ts";
 import { validate } from "../middlewares/validate.middleware.ts";
 import {
   presentTransaction,
@@ -34,7 +34,7 @@ transactionsController.post(
   "/",
   validate(sendSchema),
   async (req: Request, res: Response) => {
-    const { receiverMobileNumber, amount } = req.validated!.body;
+    const { receiverMobileNumber, amount } = req.validated!.body as SendInput;
     const result = await transactionsService.send(
       req.userId!,
       receiverMobileNumber,

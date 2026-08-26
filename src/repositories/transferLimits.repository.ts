@@ -20,7 +20,10 @@ export class TransferLimitsRepository extends BaseRepository {
     userId,
     lock = false,
     db = this.db,
-  }: GetUserTransferIdPayload): Promise<Partial<TransferLimits> | null> {
+  }: GetUserTransferIdPayload): Promise<Pick<
+    TransferLimits,
+    "dailyLimit" | "monthlyLimit"
+  > | null> {
     const { rows } = await db.query(
       `SELECT user_id, daily_limit, monthly_limit
 		   FROM transfer_limits

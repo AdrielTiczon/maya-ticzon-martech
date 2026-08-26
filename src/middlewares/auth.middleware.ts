@@ -25,20 +25,3 @@ export function jwtAuthMiddleware(
     );
   }
 }
-
-export function apiKeyAuthMiddleware(
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-) {
-  const apiKey = req.header("x-api-key");
-
-  if (!apiKey || apiKey !== process.env.API_KEY) {
-    throw unauthorized(
-      "UNAUTHORIZED",
-      "You are not allowed to access this resource.",
-    );
-  }
-
-  next();
-}
