@@ -18,13 +18,21 @@
     "node": ">=20.0.0"
   },
   "imports": {
+    "#controllers": "./src/controllers/index.ts",
     "#controllers/*": "./src/controllers/*.ts",
+    "#database": "./src/database/index.ts",
     "#database/*": "./src/database/*.ts",
+    "#middlewares": "./src/middlewares/index.ts",
     "#middlewares/*": "./src/middlewares/*.ts",
+    "#presenters": "./src/presenters/index.ts",
     "#presenters/*": "./src/presenters/*.ts",
+    "#repositories": "./src/repositories/index.ts",
     "#repositories/*": "./src/repositories/*.ts",
+    "#schemas": "./src/schemas/index.ts",
     "#schemas/*": "./src/schemas/*.ts",
+    "#services": "./src/services/index.ts",
     "#services/*": "./src/services/*.ts",
+    "#utils": "./src/utils/index.ts",
     "#utils/*": "./src/utils/*.ts",
     "#docs/*": "./docs/*"
   },
@@ -36,7 +44,8 @@
     "db:migration-up": "dbmate up",
     "db:migration-down": "dbmate down",
     "db:seed": "tsx db/seed.ts",
-    "test": "tsx --test test/*.test.ts"
+    "test": "npm run db:test:setup && DATABASE_URL=\"$TEST_DATABASE_URL\" tsx --test test/*.test.ts",
+    "db:test:setup": "dbmate --url \"$TEST_DATABASE_URL\" up && DATABASE_URL=\"$TEST_DATABASE_URL\" tsx db/seed.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
@@ -45,8 +54,10 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.3.0",
     "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
     "dbmate": "^2.35.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
   },
