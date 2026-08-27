@@ -3,7 +3,7 @@
   "info": {
     "title": "Maya Remittance App",
     "version": "1.0.0",
-    "description": "## Send Money Limits Module\n\nA minimalist backend REST API covering the send money feature. Users transfer to other users in the system, and each transfer is checked against a per-user daily and monthly cap before it is recorded. Caps are inclusive, boundaries are evaluated in Asia/Manila, and amounts are in PHP.\n\n> Note: Please ensure you allow **cookies**, as they will be used for auth \n  \n\n### Test accounts\n\nThere is no registration endpoint, so users come from the seed. Each has a ₱50,000 daily and ₱500,000 monthly limit.\n\n| Name | Mobile number | mPIN | Daily | Monthly |\n| --- | --- | --- | --- | --- |\n| Alice Santos | `09000000001` | `1111` | ₱50,000 | ₱500,000 |\n| Bob Reyes | `09000000002` | `2222` | ₱50,000 | ₱500,000 |\n| Carol Cruz | `09000000003` | `3333` | ₱50,000 | ₱500,000 |\n| Dave Lim | `09000000004` | `4444` | ₱50,000 | ₱500,000 |"
+    "description": "## Send Money Limits Module\n\nA minimalist backend REST API covering the send money feature. Users transfer to other users in the system, and each transfer is checked against a per-user daily and monthly cap before it is recorded. Caps are inclusive, boundaries are evaluated in Asia/Manila, and amounts are in PHP.\n\n> **Auth uses a cookie, not a bearer token.**\n> The **Authorize** button above cannot help here: browsers block scripts from setting the\n> `Cookie` header, so there is nothing useful to paste into it.\n>\n> Instead, run **`POST /auth/login`** below with any account from the table. The browser stores\n> the `access_token` cookie and attaches it automatically to every later request on this page,\n> because `/docs` is served from the same origin. Ensure cookies are allowed for localhost. \n  \n\n### Test accounts\n\nThere is no registration endpoint, so users come from the seed. Each has a ₱50,000 daily and ₱500,000 monthly limit.\n\n| Name | Mobile number | mPIN | Daily | Monthly |\n| --- | --- | --- | --- | --- |\n| Alice Santos | `09000000001` | `1111` | ₱50,000 | ₱500,000 |\n| Bob Reyes | `09000000002` | `2222` | ₱50,000 | ₱500,000 |\n| Carol Cruz | `09000000003` | `3333` | ₱50,000 | ₱500,000 |\n| Dave Lim | `09000000004` | `4444` | ₱50,000 | ₱500,000 |"
   },
   "servers": [
     {
@@ -363,7 +363,7 @@
         ],
         "security": [
           {
-            "ApiKeyAuth": []
+            "cookieAuth": []
           }
         ],
         "description": "The caller's transaction history, newest first. Covers both sides of a transfer unless narrowed with `direction`."
@@ -511,7 +511,7 @@
         ],
         "security": [
           {
-            "ApiKeyAuth": []
+            "cookieAuth": []
           }
         ],
         "description": "Send money to another user. The limit check and the insert run in one database transaction under a row lock, so two concurrent transfers cannot both pass the same remaining budget. Caps are inclusive: a transfer landing exactly on the limit is allowed.",
@@ -707,7 +707,7 @@
         ],
         "security": [
           {
-            "ApiKeyAuth": []
+            "cookieAuth": []
           }
         ],
         "description": "Remaining daily and monthly budget for the caller. Windows start at midnight and on the first of the month, both in Asia/Manila."
@@ -716,10 +716,11 @@
   },
   "components": {
     "securitySchemes": {
-      "ApiKeyAuth": {
+      "cookieAuth": {
         "type": "apiKey",
-        "in": "header",
-        "name": "access_token"
+        "in": "cookie",
+        "name": "access_token",
+        "description": "Session JWT set by POST /auth/login. Swagger's Authorize button cannot set a cookie, because browsers block scripts from writing the Cookie header. Log in using POST /auth/login on this page instead: the browser stores the cookie and attaches it to later requests automatically, since /docs is served from the same origin."
       }
     }
   }
