@@ -23,7 +23,7 @@ export function signAccessToken(userId: string): string {
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
   return jwt.verify(token, JWT_SECRET, {
-    algorithms: [ALGORITHM], // must be pinned — see below
+    algorithms: [ALGORITHM], // must be pinned, see below
     issuer: ISSUER,
   }) as AccessTokenPayload;
 }
