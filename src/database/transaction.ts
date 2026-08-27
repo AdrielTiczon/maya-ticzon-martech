@@ -7,7 +7,7 @@ export async function withTransaction<T>(
   const client = await pool.connect();
 
   try {
-    client.query("BEGIN");
+    await client.query("BEGIN");
     const result = await fn(client);
     await client.query("COMMIT");
     return result;
