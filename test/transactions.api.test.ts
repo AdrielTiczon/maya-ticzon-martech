@@ -203,7 +203,9 @@ describe("daily limit", () => {
   });
 
   beforeEach(async () => {
-    await pool.query("DELETE FROM transactions WHERE sender_id = $1", [carolId]);
+    await pool.query("DELETE FROM transactions WHERE sender_id = $1", [
+      carolId,
+    ]);
   });
 
   it("allows a transfer landing exactly on the cap, then rejects one centavo more", async () => {
@@ -264,9 +266,11 @@ describe("monthly limit", () => {
     const dave = request.agent(app);
     await dave.post("/auth/login").send(DAVE);
 
-
     // Creates a simulation a fake transfer of 500,000
-    await pool.query("INSERT INTO transactions (sender_id, receiver_id, amount, created_at) VALUES($1, $2, 50000000, NOW() - INTERVAL '1 day')", [daveId, carolId])
+    await pool.query(
+      "INSERT INTO transactions (sender_id, receiver_id, amount, created_at) VALUES($1, $2, 50000000, NOW() - INTERVAL '1 day')",
+      [daveId, carolId],
+    );
 
     const res = await dave
       .post("/transactions")
