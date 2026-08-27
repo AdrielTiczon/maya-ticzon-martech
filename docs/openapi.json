@@ -19,9 +19,7 @@
             "description": "success: service is up"
           }
         },
-        "tags": [
-          "health"
-        ],
+        "tags": ["health"],
         "description": "Liveness probe. Returns plain text, not JSON."
       }
     },
@@ -62,11 +60,7 @@
                           "description": "PH mobile number. Accepts 09171234567, +639171234567, 639171234567, and spaced or dashed variants. Always returned in the 639XXXXXXXXX form."
                         }
                       },
-                      "required": [
-                        "id",
-                        "name",
-                        "mobileNumber"
-                      ]
+                      "required": ["id", "name", "mobileNumber"]
                     }
                   }
                 },
@@ -94,10 +88,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "VALIDATION_ERROR",
@@ -120,10 +111,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "INVALID_CREDENTIALS",
@@ -133,9 +121,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "description": "Sets an httpOnly access_token cookie. The JWT is deliberately not returned in the body, so page scripts cannot read it.",
         "requestBody": {
           "content": {
@@ -154,10 +140,7 @@
                     "pattern": "^\\d{4,6}$"
                   }
                 },
-                "required": [
-                  "mobileNumber",
-                  "mpin"
-                ]
+                "required": ["mobileNumber", "mpin"]
               },
               "example": {
                 "mobileNumber": "09000000001",
@@ -176,9 +159,7 @@
             "description": "success: logged out, no body"
           }
         },
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "description": "Clears the access_token cookie. Safe to call without a valid session."
       }
     },
@@ -192,10 +173,7 @@
             "description": "Omit for both inbound and outbound.",
             "schema": {
               "type": "string",
-              "enum": [
-                "inbound",
-                "outbound"
-              ]
+              "enum": ["inbound", "outbound"]
             },
             "example": "inbound"
           },
@@ -254,9 +232,7 @@
                           },
                           "currency": {
                             "type": "string",
-                            "enum": [
-                              "PHP"
-                            ]
+                            "enum": ["PHP"]
                           },
                           "createdAt": {
                             "type": "string",
@@ -282,10 +258,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "data",
-                    "pagination"
-                  ]
+                  "required": ["data", "pagination"]
                 },
                 "example": {
                   "data": [
@@ -319,10 +292,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "VALIDATION_ERROR",
@@ -345,10 +315,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "UNAUTHORIZED",
@@ -358,9 +325,7 @@
             }
           }
         },
-        "tags": [
-          "transactions"
-        ],
+        "tags": ["transactions"],
         "security": [
           {
             "cookieAuth": []
@@ -398,9 +363,7 @@
                     },
                     "currency": {
                       "type": "string",
-                      "enum": [
-                        "PHP"
-                      ]
+                      "enum": ["PHP"]
                     },
                     "createdAt": {
                       "type": "string",
@@ -441,10 +404,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "VALIDATION_ERROR",
@@ -467,10 +427,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "UNAUTHORIZED",
@@ -493,10 +450,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "DAILY_LIMIT_EXCEEDED",
@@ -506,9 +460,7 @@
             }
           }
         },
-        "tags": [
-          "transactions"
-        ],
+        "tags": ["transactions"],
         "security": [
           {
             "cookieAuth": []
@@ -539,10 +491,7 @@
                     ]
                   }
                 },
-                "required": [
-                  "receiverMobileNumber",
-                  "amount"
-                ]
+                "required": ["receiverMobileNumber", "amount"]
               },
               "example": {
                 "receiverMobileNumber": "09000000002",
@@ -566,9 +515,7 @@
                   "properties": {
                     "currency": {
                       "type": "string",
-                      "enum": [
-                        "PHP"
-                      ]
+                      "enum": ["PHP"]
                     },
                     "daily": {
                       "type": "object",
@@ -592,11 +539,7 @@
                           "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
                         }
                       },
-                      "required": [
-                        "limit",
-                        "used",
-                        "remaining"
-                      ]
+                      "required": ["limit", "used", "remaining"]
                     },
                     "monthly": {
                       "type": "object",
@@ -620,18 +563,10 @@
                           "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
                         }
                       },
-                      "required": [
-                        "limit",
-                        "used",
-                        "remaining"
-                      ]
+                      "required": ["limit", "used", "remaining"]
                     }
                   },
-                  "required": [
-                    "currency",
-                    "daily",
-                    "monthly"
-                  ]
+                  "required": ["currency", "daily", "monthly"]
                 },
                 "example": {
                   "currency": "PHP",
@@ -663,10 +598,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "UNAUTHORIZED",
@@ -689,10 +621,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "code",
-                    "message"
-                  ]
+                  "required": ["code", "message"]
                 },
                 "example": {
                   "code": "LIMITS_NOT_CONFIGURED",
@@ -702,9 +631,7 @@
             }
           }
         },
-        "tags": [
-          "transactions"
-        ],
+        "tags": ["transactions"],
         "security": [
           {
             "cookieAuth": []
