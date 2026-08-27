@@ -9,7 +9,8 @@ export type CreatePayload = {
 
 export type GetHistoryPayload = {
   userId: string;
-  direction: "inbound" | "outbound";
+  /** Omitted means both directions. */
+  direction?: "inbound" | "outbound";
   limit: number;
   offset: number;
 };

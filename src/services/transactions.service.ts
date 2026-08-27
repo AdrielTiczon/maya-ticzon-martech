@@ -1,11 +1,11 @@
-import pool from "#database/pool";
-import { withTransaction } from "#database/transaction";
-import TransactionsRepository, {
+import { pool, withTransaction } from "#database";
+import {
+  TransactionsRepository,
+  TransferLimitsRepository,
+  UsersRepository,
   type CreatePayload,
-} from "#repositories/transactions.repository";
-import { TransferLimitsRepository } from "#repositories/transferLimits.repository";
-import UsersRepository from "#repositories/users.repository";
-import { badRequest, unprocessable } from "#utils/errors";
+} from "#repositories";
+import { badRequest, unprocessable } from "#utils";
 
 const transferLimitsRepository = new TransferLimitsRepository(pool);
 const usersRepository = new UsersRepository(pool);
@@ -17,7 +17,7 @@ export type LimitUsage = { daily: Period; monthly: Period };
 export default class TransactionsService {
   async getHistoryByUser(
     userId: string,
-    direction: "inbound" | "outbound",
+    direction: "inbound" | "outbound" | undefined,
     limit: number,
     offset: number,
   ) {
@@ -58,7 +58,11 @@ export default class TransactionsService {
     };
   }
 
-  async sendMoney(senderId: string, receiverMobileNumber: string, amount: number) {
+  async sendMoney(
+    senderId: string,
+    receiverMobileNumber: string,
+    amount: number,
+  ) {
     // Request validity. Nothing here needs the lock, so fail before taking it.
     const receiver =
       await usersRepository.findByMobileNumber(receiverMobileNumber);

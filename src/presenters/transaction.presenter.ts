@@ -1,6 +1,6 @@
-import type { Transaction } from "#repositories/transactions.repository";
-import type { LimitUsage, Period } from "#services/transactions.service";
-import { toDecimalString } from "#utils/money";
+import type { Transaction } from "#repositories";
+import type { LimitUsage, Period } from "#services";
+import { toDecimalString } from "#utils";
 
 export type TransactionResponse = {
   id: string;

@@ -1,6 +1,6 @@
 import argon2 from "argon2";
-import pool from "#database/pool";
-import { formatMobileNumber } from "#utils/formatMobileNumber";
+import { pool } from "#database";
+import { formatMobileNumber } from "#utils";
 
 type SeedUser = {
   name: string;
@@ -26,14 +26,14 @@ const SEED_USERS: SeedUser[] = [
     monthlyLimit: 500_000_00,
   },
   {
-    name: "Alice Santos",
+    name: "Carol Cruz",
     mobileNumber: "639000000003",
     mpin: "3333",
     dailyLimit: 50_000_00,
     monthlyLimit: 500_000_00,
   },
   {
-    name: "Bob Reyes",
+    name: "Dave Lim",
     mobileNumber: "639000000004",
     mpin: "4444",
     dailyLimit: 50_000_00,

@@ -1,27 +1,39 @@
 import { Router, type Request, type Response } from "express";
-import TransactionsService from "#services/transactions.service";
-import { sendSchema, type SendInput } from "#schemas/transactions.schema";
-import { validate } from "#middlewares/validate.middleware";
+import { TransactionsService } from "#services";
+import {
+  historyQuerySchema,
+  sendSchema,
+  type HistoryQueryInput,
+  type SendInput,
+} from "#schemas";
+import { validate } from "#middlewares";
 import {
   presentTransaction,
   presentTransactionHistory,
   presentUsage,
-} from "#presenters/transaction.presenter";
+} from "#presenters";
 
 const transactionsController = Router();
 const transactionsService = new TransactionsService();
 
 // Transaction history
-transactionsController.get("/", async (req: Request, res: Response) => {
-  const result = await transactionsService.getHistoryByUser(
-    req.userId!,
-    req.query.direction as "inbound" | "outbound",
-    Number(req.query.limit ?? 20),
-    Number(req.query.offset ?? 0),
-  );
+transactionsController.get(
+  "/",
+  validate(historyQuerySchema, "query"),
+  async (req: Request, res: Response) => {
+    const { direction, limit, offset } = req.validated!
+      .query as HistoryQueryInput;
 
-  res.status(200).send(presentTransactionHistory(result));
-});
+    const result = await transactionsService.getHistoryByUser(
+      req.userId!,
+      direction,
+      limit,
+      offset,
+    );
+
+    res.status(200).send(presentTransactionHistory(result));
+  },
+);
 
 // Transactions daily/monthly usage
 transactionsController.get("/usage", async (req, res) => {

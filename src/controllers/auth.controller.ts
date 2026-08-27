@@ -1,9 +1,8 @@
 import { Router, type Request, type Response } from "express";
-import AuthService from "#services/auth.service";
-import { ACCESS_TOKEN_TTL_SECONDS } from "#services/token.service";
-import { validate } from "#middlewares/validate.middleware";
-import { loginSchema, type LoginInput } from "#schemas/auth.schema";
-import { presentUser } from "#presenters/user.presenter";
+import { ACCESS_TOKEN_TTL_SECONDS, AuthService } from "#services";
+import { validate } from "#middlewares";
+import { loginSchema, type LoginInput } from "#schemas";
+import { presentUser } from "#presenters";
 
 const authController = Router();
 const authService = new AuthService();

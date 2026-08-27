@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  formatMobileNumber,
-  isValidMobileNumber,
-} from "#utils/formatMobileNumber";
+import { formatMobileNumber, isValidMobileNumber } from "#utils";
 
 export const loginSchema = z.object({
   mobileNumber: z

@@ -1,9 +1,10 @@
 import { z } from "zod";
 import {
   formatMobileNumber,
+  isValidAmount,
   isValidMobileNumber,
-} from "#utils/formatMobileNumber";
-import { isValidAmount, toCentavos } from "#utils/money";
+  toCentavos,
+} from "#utils";
 
 export const sendSchema = z.object({
   receiverMobileNumber: z
@@ -25,3 +26,14 @@ export const sendSchema = z.object({
 });
 
 export type SendInput = z.infer<typeof sendSchema>;
+
+export const historyQuerySchema = z.object({
+  direction: z.enum(["inbound", "outbound"]).optional(),
+  // Coerced because query params arrive as strings. Capped so a caller
+  // cannot request the whole table, and bounded so NaN or a negative
+  // value never reaches Postgres as `LIMIT NaN` / `OFFSET -5`.
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export type HistoryQueryInput = z.infer<typeof historyQuerySchema>;

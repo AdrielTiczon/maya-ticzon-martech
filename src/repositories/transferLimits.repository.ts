@@ -24,6 +24,15 @@ export class TransferLimitsRepository extends BaseRepository {
     TransferLimits,
     "dailyLimit" | "monthlyLimit"
   > | null> {
+    // FOR UPDATE only holds for the life of a transaction. On the pool the
+    // lock is released the instant the statement ends, which would silently
+    // remove the protection rather than failing loudly.
+    if (lock && db === this.db) {
+      throw new Error(
+        "getUserTransferLimits: lock:true requires a transaction client",
+      );
+    }
+
     const { rows } = await db.query(
       `SELECT user_id, daily_limit, monthly_limit
 		   FROM transfer_limits
