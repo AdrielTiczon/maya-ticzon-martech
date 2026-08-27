@@ -8,15 +8,15 @@ const ALICE = { mobileNumber: "09000000001", mpin: "1111" };
 const BOB_NUMBER = "09000000002";
 
 const CAROL = { mobileNumber: "09000000003", mpin: "3333" };
-const CAROL_MSISDN = "639000000003";
+const CAROL_MOBILE_NUMBER = "639000000003";
 
 const DAVE = { mobileNumber: "09000000004", mpin: "4444" };
-const DAVE_MSISDN = "639000000004";
+const DAVE_MOBILE_NUMBER = "639000000004";
 
-async function userIdFor(msisdn: string): Promise<string> {
+async function userIdFor(mobileNumber: string): Promise<string> {
   const { rows } = await pool.query(
     "SELECT id FROM users WHERE mobile_number = $1",
-    [msisdn],
+    [mobileNumber],
   );
   return rows[0].id;
 }
@@ -199,7 +199,7 @@ describe("daily limit", () => {
   let carolId: string;
 
   before(async () => {
-    carolId = await userIdFor(CAROL_MSISDN);
+    carolId = await userIdFor(CAROL_MOBILE_NUMBER);
   });
 
   beforeEach(async () => {
@@ -257,16 +257,33 @@ describe("monthly limit", () => {
   let carolId: string;
 
   before(async () => {
-    daveId = await userIdFor(DAVE_MSISDN);
-    carolId = await userIdFor(CAROL_MSISDN);
+    daveId = await userIdFor(DAVE_MOBILE_NUMBER);
+    carolId = await userIdFor(CAROL_MOBILE_NUMBER);
     await pool.query("DELETE FROM transactions WHERE sender_id = $1", [daveId]);
+  });
+
+  it("allows transfer if the previous month hits the monthly limit", async () => {
+    const dave = request.agent(app);
+    await dave.post("/auth/login").send(DAVE);
+
+    // create simulation where last month reached the limit
+    await pool.query(
+      "INSERT INTO transactions (sender_id, receiver_id, amount, created_at) VALUES($1, $2, 50000000000, DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month'))",
+      [daveId, carolId],
+    );
+
+    const res = await dave
+      .post("/transactions")
+      .send({ receiverMobileNumber: BOB_NUMBER, amount: "2500.00" });
+
+    assert.equal(res.status, 201);
   });
 
   it("rejects a transfer under the daily cap but over the monthly one", async () => {
     const dave = request.agent(app);
     await dave.post("/auth/login").send(DAVE);
 
-    // Creates a simulation a fake transfer of 500,000
+    // Creates a simulation a fake transfer of 500,000 on previous day
     await pool.query(
       "INSERT INTO transactions (sender_id, receiver_id, amount, created_at) VALUES($1, $2, 50000000, NOW() - INTERVAL '1 day')",
       [daveId, carolId],

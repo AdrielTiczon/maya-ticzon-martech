@@ -43,7 +43,7 @@ const SEED_USERS: SeedUser[] = [
 
 async function upsertUser(user: SeedUser): Promise<string> {
   const mpinHash = await argon2.hash(user.mpin);
-  const msisdn = formatMobileNumber(user.mobileNumber);
+  const mobileNumber = formatMobileNumber(user.mobileNumber);
 
   const { rows } = await pool.query(
     `INSERT INTO users (mobile_number, name, mpin_hash)
@@ -51,7 +51,7 @@ async function upsertUser(user: SeedUser): Promise<string> {
      ON CONFLICT (mobile_number)
        DO UPDATE SET name = EXCLUDED.name, mpin_hash = EXCLUDED.mpin_hash
      RETURNING id`,
-    [msisdn, user.name, mpinHash],
+    [mobileNumber, user.name, mpinHash],
   );
 
   return rows[0].id;
