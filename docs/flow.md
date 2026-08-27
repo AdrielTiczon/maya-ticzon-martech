@@ -4,7 +4,7 @@ End-to-end walkthrough of the Send Money Limits module, with copy-pasteable requ
 
 ## Conventions
 
-**Base URL.** `http://localhost:3001` when using the values from `.env.example`. If you changed `APP_HOST_PORT`, substitute accordingly.
+**Base URL.** `http://localhost:3001` when using the values from `.env.example`. If you changed `PORT`, substitute accordingly.
 
 **Auth.** `POST /auth/login` sets an httpOnly cookie holding a signed JWT. That cookie is what identifies the user on `/transactions/*`; no other credential is needed.
 
@@ -159,7 +159,7 @@ The sender is always taken from the authenticated session, never from the reques
 | Receiver is the sender | 400 | `INVALID_REQUEST` |
 | Would exceed the daily cap | 422 | `DAILY_LIMIT_EXCEEDED` |
 | Would exceed the monthly cap | 422 | `MONTHLY_LIMIT_EXCEEDED` |
-| Sender has no limits configured | 422 | `UNPROCESSABLE` |
+| Sender has no limits configured | 422 | `LIMITS_NOT_CONFIGURED` |
 
 ### Limits are inclusive
 
@@ -248,7 +248,7 @@ Every error shares one shape:
 | `NOT_FOUND` | 404 | No such route |
 | `DAILY_LIMIT_EXCEEDED` | 422 | Transfer would exceed the daily cap |
 | `MONTHLY_LIMIT_EXCEEDED` | 422 | Transfer would exceed the monthly cap |
-| `UNPROCESSABLE` | 422 | No transfer limits configured for the account |
+| `LIMITS_NOT_CONFIGURED` | 422 | No transfer limits configured for the account |
 
 `422` is used for requests that are well-formed and authorized but blocked by a business rule, keeping them distinguishable from malformed input (`400`).
 

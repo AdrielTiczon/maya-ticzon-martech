@@ -42,7 +42,7 @@ Re-seed with `docker compose exec app npm run db:seed`.
 
 ## Authentication
 
-Logging in sets an httpOnly cookie holding a signed JWT, and that cookie identifies the user on `/transactions/*`. The token is deliberately not returned in the response body, so page scripts cannot read it. Browsers and Swagger UI keep the cookie automatically; with curl you need a cookie jar.
+Logging in sets an httpOnly cookie holding a signed JWT, and that cookie identifies the user on `/transactions/*`. The token is deliberately not returned in the response body, so page scripts cannot read it. Browsers and Swagger UI keep the cookie automatically; with curl you need a cookie jar. The token lasts 15 minutes, so a long session on `/docs` may need a second login.
 
 ```bash
   curl -X POST http://localhost:3001/auth/login \
