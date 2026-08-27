@@ -31,12 +31,14 @@ Swagger UI is at **http://localhost:3001/docs** (or whichever port you set as `P
 
 There is no registration endpoint, so users come from the seed. Each has a ₱50,000 daily and ₱500,000 monthly limit.
 
-| Mobile number | mPIN |
-|---|---|
-| `09000000001` | `1111` |
-| `09000000002` | `2222` |
-| `09000000003` | `3333` |
-| `09000000004` | `4444` |
+Limits are varied deliberately so both rejection paths can be seen in a request or two. Carol has a tight daily cap, and Dave's monthly cap sits below his daily one, which is the only way the monthly branch binds first within a single day.
+
+| Name | Mobile number | mPIN | Daily | Monthly |
+|---|---|---|---|---|
+| Alice Santos | `09000000001` | `1111` | ₱50,000 | ₱500,000 |
+| Bob Reyes | `09000000002` | `2222` | ₱50,000 | ₱500,000 |
+| Carol Cruz | `09000000003` | `3333` | ₱50,000 | ₱500,000 |
+| Dave Lim | `09000000004` | `4444` | ₱50,000 | ₱500,000 |
 
 Re-seed with `docker compose exec app npm run db:seed`.
 
@@ -63,6 +65,18 @@ Logging in sets an httpOnly cookie holding a signed JWT, and that cookie identif
 | `GET` | `/health` | None | Liveness check |
 
 Request and response examples for each flow are in [docs/flow.md](./docs/flow.md).
+
+## Tests
+
+```bash
+  docker compose exec app npm test
+```
+
+Tests run against a separate `remittance_test` database, never the one the application serves from. It is created, migrated and seeded automatically on every run, so there is nothing to set up first and nothing to restore afterwards.
+
+There are two layers. Unit tests cover the money helpers, where the interesting cases are precision ones that are awkward to reach over HTTP: `19.99 * 100` in JavaScript is not `1999`, which is why amounts are parsed as strings rather than multiplied. Integration tests drive the real Express app with supertest and a live database, one file per controller.
+
+Coverage is deliberately narrow rather than broad, aimed at the claims that would be expensive to get wrong. That the daily cap is inclusive, verified by sending exactly the remaining amount and then one centavo more. That two simultaneous sends cannot both pass a cap, which is the only proof the row lock works, since concurrent requests cannot be issued by hand. That the sender is taken from the session rather than the request body, checked by posting a spoofed `senderId` and asserting it is ignored. And that a login response leaks neither the token nor the MPIN hash.
 
 ## Assumptions
 
