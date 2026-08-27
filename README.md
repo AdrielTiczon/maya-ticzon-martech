@@ -31,8 +31,6 @@ Swagger UI is at **http://localhost:3001/docs** (or whichever port you set as `P
 
 There is no registration endpoint, so users come from the seed. Each has a ₱50,000 daily and ₱500,000 monthly limit.
 
-Limits are varied deliberately so both rejection paths can be seen in a request or two. Carol has a tight daily cap, and Dave's monthly cap sits below his daily one, which is the only way the monthly branch binds first within a single day.
-
 | Name | Mobile number | mPIN | Daily | Monthly |
 |---|---|---|---|---|
 | Alice Santos | `09000000001` | `1111` | ₱50,000 | ₱500,000 |
