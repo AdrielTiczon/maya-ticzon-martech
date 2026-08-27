@@ -2,27 +2,15 @@
 
 End-to-end walkthrough of the Send Money Limits module, with copy-pasteable requests.
 
-- [Conventions](#conventions)
-- [Seeded accounts](#seeded-accounts)
-- [1. Authenticate](#1-authenticate)
-- [2. Check your limits](#2-check-your-limits)
-- [3. Send money](#3-send-money)
-- [4. View transaction history](#4-view-transaction-history)
-- [5. Log out](#5-log-out)
-- [Error reference](#error-reference)
-- [Full walkthrough script](#full-walkthrough-script)
-
----
-
 ## Conventions
 
-**Base URL** — `http://localhost:3001` when using the values from `.env.example`. If you changed `APP_HOST_PORT`, substitute accordingly.
+**Base URL.** `http://localhost:3001` when using the values from `.env.example`. If you changed `APP_HOST_PORT`, substitute accordingly.
 
 **Auth.** `POST /auth/login` sets an httpOnly cookie holding a signed JWT. That cookie is what identifies the user on `/transactions/*`; no other credential is needed.
 
-**Money.** Amounts are sent as decimal strings (or numbers) with at most 2 decimal places — `"1000.50"`. Responses always return decimal strings alongside an explicit `"currency": "PHP"`. Internally everything is stored as integer centavos, so no floating-point rounding is possible.
+**Money.** Amounts are sent as decimal strings (or numbers) with at most 2 decimal places, for example `"1000.50"`. Responses always return decimal strings alongside an explicit `"currency": "PHP"`. Internally everything is stored as integer centavos, so no floating-point rounding is possible.
 
-**Mobile numbers.** Any common Philippine format is accepted on input — `09171234567`, `+639171234567`, `639171234567`, `9171234567`, with or without spaces, dashes and parentheses. They are normalized to E.164 (`639XXXXXXXXX`) for storage and in responses.
+**Mobile numbers.** Any common Philippine format is accepted on input: `09171234567`, `+639171234567`, `639171234567`, `9171234567`, with or without spaces, dashes and parentheses. They are normalized to E.164 (`639XXXXXXXXX`) for storage and in responses.
 
 **Time.** All daily and monthly boundaries are evaluated in **Asia/Manila (PHT)**, computed explicitly in SQL so results never depend on server or session timezone configuration.
 
@@ -30,7 +18,7 @@ End-to-end walkthrough of the Send Money Limits module, with copy-pasteable requ
 
 ## Seeded accounts
 
-The database is migrated and seeded automatically on `docker compose up`. There is no registration endpoint — these are the only accounts.
+The database is migrated and seeded automatically on `docker compose up`. There is no registration endpoint, so these are the only accounts.
 
 | Name | Mobile number | mPIN | Daily limit | Monthly limit |
 |---|---|---|---|---|
@@ -49,26 +37,6 @@ docker compose exec app npm run db:seed
 
 ## 1. Authenticate
 
-```mermaid
-sequenceDiagram
-  autonumber
-  actor Client
-  participant API
-  participant DB
-
-  Client->>API: POST /auth/login<br/>{ mobileNumber, mpin }
-  API->>API: Validate & normalize to 639XXXXXXXXX
-  API->>DB: SELECT user WHERE mobile_number = ?
-  DB-->>API: user + mpin_hash
-  API->>API: argon2.verify(hash, mpin)
-  alt credentials valid
-    API->>API: Sign JWT (sub = user id)
-    API-->>Client: 200 + Set-Cookie: access_token (httpOnly)
-  else invalid
-    API-->>Client: 401 INVALID_CREDENTIALS
-  end
-```
-
 When no user matches, the service still runs a verification against a dummy hash before responding. This keeps the response time for an unknown mobile number indistinguishable from a wrong mPIN, so the endpoint cannot be used to enumerate which numbers are registered.
 
 **Request**
@@ -80,7 +48,7 @@ curl -X POST http://localhost:3001/auth/login \
   -d '{ "mobileNumber": "09000000001", "mpin": "1111" }'
 ```
 
-**Response** — `200 OK`
+**Response:** `200 OK`
 
 ```json
 {
@@ -111,7 +79,7 @@ Reports the caps, what has been used in the current PHT day and month, and what 
 curl http://localhost:3001/transactions/usage -b cookies.txt
 ```
 
-**Response** — `200 OK`
+**Response:** `200 OK`
 
 ```json
 {
@@ -121,7 +89,7 @@ curl http://localhost:3001/transactions/usage -b cookies.txt
 }
 ```
 
-Usage is **computed from the transaction ledger on every request** — summed over the current PHT day and month — rather than stored as a decrementing counter. Nothing resets at midnight; the date filter simply shifts, so usage can never drift out of sync with the recorded transactions.
+Usage is **computed from the transaction ledger on every request**, summed over the current PHT day and month, rather than stored as a decrementing counter. Nothing resets at midnight; the date filter simply shifts, so usage can never drift out of sync with the recorded transactions.
 
 ---
 
@@ -135,24 +103,24 @@ sequenceDiagram
   participant DB
 
   Client->>API: POST /transactions<br/>{ receiverMobileNumber, amount }
-  API->>API: Validate convert "1000.50" 100050 centavos
+  API->>API: Validate, convert "1000.50" to 100050 centavos
+  API->>DB: SELECT receiver WHERE mobile_number = ?
 
-    note over API,DB: Single DB transaction
-    API->>DB: BEGIN
-    API->>DB: SELECT limits FOR UPDATE (locks sender's row)
-    DB-->>API: daily_limit, monthly_limit
-    API->>DB: SELECT receiver WHERE mobile_number = ?
-    API->>DB: SUM(amount) for today / this month (PHT)
-    DB-->>API: daily_used, monthly_used
+  note over API,DB: Everything below is one DB transaction
+  API->>DB: BEGIN
+  API->>DB: SELECT limits FOR UPDATE (locks sender's row)
+  DB-->>API: daily_limit, monthly_limit
+  API->>DB: SUM(amount) for today / this month (PHT)
+  DB-->>API: daily_used, monthly_used
 
-    alt within both caps
-      API->>DB: INSERT transaction
-      API->>DB: COMMIT
-      API-->>Client: 201 Created
-    else cap exceeded
-      API->>DB: ROLLBACK
-      API-->>Client: 422 DAILY_/MONTHLY_LIMIT_EXCEEDED
-    end
+  alt within both caps
+    API->>DB: INSERT transaction
+    API->>DB: COMMIT
+    API-->>Client: 201 Created
+  else cap exceeded
+    API->>DB: ROLLBACK
+    API-->>Client: 422 DAILY_/MONTHLY_LIMIT_EXCEEDED
+  end
 ```
 
 The sender's `transfer_limits` row is locked with `SELECT ... FOR UPDATE` **before** usage is summed. Two simultaneous sends from the same user therefore serialize: the second blocks until the first commits, then recomputes usage against the updated ledger. Without the lock both could read the same stale total and each pass a check the pair collectively violates. Different senders never contend, since they lock different rows.
@@ -166,9 +134,9 @@ curl -X POST http://localhost:3001/transactions \
   -d '{ "receiverMobileNumber": "09000000002", "amount": "1000.50" }'
 ```
 
-The sender is always taken from the authenticated session — never from the request body — so a caller cannot send money as another user.
+The sender is always taken from the authenticated session, never from the request body, so a caller cannot send money as another user.
 
-**Response** — `201 Created`
+**Response:** `201 Created`
 
 ```json
 {
@@ -195,14 +163,14 @@ The sender is always taken from the authenticated session — never from the req
 
 ### Limits are inclusive
 
-A transfer is allowed when it does **not exceed** the remaining limit — a send landing exactly on the boundary succeeds.
+A transfer is allowed when it does **not exceed** the remaining limit, so a send landing exactly on the boundary succeeds.
 
 ```bash
 # With ₱49,899.50 remaining today:
 curl -X POST http://localhost:3001/transactions -b cookies.txt \
   -H "Content-Type: application/json" \
   -d '{ "receiverMobileNumber": "09000000002", "amount": "49899.50" }'
-# → 201 Created — remaining is now exactly 0.00
+# → 201 Created. Remaining is now exactly 0.00
 
 curl -X POST http://localhost:3001/transactions -b cookies.txt \
   -H "Content-Type: application/json" \
@@ -228,7 +196,7 @@ curl "http://localhost:3001/transactions?direction=outbound&limit=20&offset=0" -
 | `limit` | 1–100 | 20 | Page size |
 | `offset` | ≥ 0 | 0 | Rows to skip |
 
-**Response** — `200 OK`
+**Response:** `200 OK`
 
 ```json
 {
@@ -246,7 +214,7 @@ curl "http://localhost:3001/transactions?direction=outbound&limit=20&offset=0" -
 }
 ```
 
-`hasMore` is derived by requesting one row beyond `limit` and discarding it — so the client learns whether another page exists without a second query or a full `COUNT`.
+`hasMore` is derived by requesting one row beyond `limit` and discarding it, so the client learns whether another page exists without a second query or a full `COUNT`.
 
 ---
 
@@ -256,7 +224,7 @@ curl "http://localhost:3001/transactions?direction=outbound&limit=20&offset=0" -
 curl -X POST http://localhost:3001/auth/logout -b cookies.txt
 ```
 
-**Response** — `204 No Content`
+**Response:** `204 No Content`
 
 This clears the session cookie. Because access tokens are stateless, a token captured before logout stays valid until it expires; see the production notes in the main README.
 
@@ -284,45 +252,3 @@ Every error shares one shape:
 
 `422` is used for requests that are well-formed and authorized but blocked by a business rule, keeping them distinguishable from malformed input (`400`).
 
----
-
-## Full walkthrough script
-
-```bash
-#!/usr/bin/env bash
-set -e
-
-BASE=http://localhost:3001
-COOKIES=$(mktemp)
-
-echo "→ Logging in as Alice"
-curl -s -X POST "$BASE/auth/login" \
-  -H "Content-Type: application/json" \
-  -c "$COOKIES" \
-  -d '{"mobileNumber":"09000000001","mpin":"1111"}'
-echo
-
-echo "→ Limits before"
-curl -s "$BASE/transactions/usage" -b "$COOKIES"
-echo
-
-echo "→ Sending ₱1,000.50 to Bob"
-curl -s -X POST "$BASE/transactions" \
-  -H "Content-Type: application/json" -b "$COOKIES" \
-  -d '{"receiverMobileNumber":"09000000002","amount":"1000.50"}'
-echo
-
-echo "→ Limits after"
-curl -s "$BASE/transactions/usage" -b "$COOKIES"
-echo
-
-echo "→ Attempting to exceed the daily cap"
-curl -s -X POST "$BASE/transactions" \
-  -H "Content-Type: application/json" -b "$COOKIES" \
-  -d '{"receiverMobileNumber":"09000000002","amount":"999999.00"}'
-echo
-
-echo "→ History"
-curl -s "$BASE/transactions?direction=outbound" -b "$COOKIES"
-echo
-```
