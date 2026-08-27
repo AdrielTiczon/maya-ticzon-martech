@@ -1,76 +1,725 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.0",
   "info": {
-    "title": "Money Remittance API",
-    "description": "Money remittance module.",
-    "version": "0.0.1"
+    "title": "Maya Remittance App",
+    "version": "1.0.0",
+    "description": "## Send Money Limits Module\n\nA minimalist backend REST API covering the send money feature. Users transfer to other users in the system, and each transfer is checked against a per-user daily and monthly cap before it is recorded. Caps are inclusive, boundaries are evaluated in Asia/Manila, and amounts are in PHP.\n\n> Note: Please ensure you allow **cookies**, as they will be used for auth \n  \n\n### Test accounts\n\nThere is no registration endpoint, so users come from the seed. Each has a ₱50,000 daily and ₱500,000 monthly limit.\n\n| Name | Mobile number | mPIN | Daily | Monthly |\n| --- | --- | --- | --- | --- |\n| Alice Santos | `09000000001` | `1111` | ₱50,000 | ₱500,000 |\n| Bob Reyes | `09000000002` | `2222` | ₱50,000 | ₱500,000 |\n| Carol Cruz | `09000000003` | `3333` | ₱50,000 | ₱500,000 |\n| Dave Lim | `09000000004` | `4444` | ₱50,000 | ₱500,000 |"
   },
   "servers": [
-    { "url": "http://localhost:3000", "description": "Local development" }
-  ],
-  "tags": [],
-  "components": {
-    "securitySchemes": {
-      "apiKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
-    },
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "mobileNumber": { "type": "string", "example": "09212345678" }
-        },
-        "required": ["id", "mobileNumber"]
-      },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": { 
-              "code": { "type": "string" },
-              "message": { "type": "string" }
-            },
-            "required": ["message"]
-          }
-        },
-        "required": ["error"]
-      }
-    },
-    "responses": {
-      "Unauthorized": {
-        "description": "Missing or invalid API key",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "#/components/schemas/Error" }
-          }
-        }
-      },
-      "NotFound": {
-        "description": "Resource not found",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "#/components/schemas/Error" }
-          }
-        }
-      }
+    {
+      "url": "http://localhost:3001"
     }
-  },
+  ],
   "paths": {
     "/health": {
       "get": {
-        "tags": ["Health"],
-        "summary": "Health check",
-        "operationId": "getHealth",
-        "security": [],
+        "summary": "health",
         "responses": {
           "200": {
-            "description": "Service availability",
+            "description": "success: service is up"
+          }
+        },
+        "tags": [
+          "health"
+        ],
+        "description": "Liveness probe. Returns plain text, not JSON."
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "auth/login",
+        "responses": {
+          "200": {
+            "description": "success: login",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "access_token=<some_jwt>; Path=/; HttpOnly; SameSite=Lax; Max-Age=900"
+              }
+            },
             "content": {
-              "text/plain": { "schema": { "type": "string", "example": "OK" } }
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Alice Santos"
+                        },
+                        "mobileNumber": {
+                          "type": "string",
+                          "pattern": "^(?:\\+63|63|0)?9\\d{9}$",
+                          "example": "09000000001",
+                          "description": "PH mobile number. Accepts 09171234567, +639171234567, 639171234567, and spaced or dashed variants. Always returned in the 639XXXXXXXXX form."
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "mobileNumber"
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id": "6f2b1c4e-9d3a-4f18-8a2b-77c0d9e1a4b5",
+                    "name": "Alice Santos",
+                    "mobileNumber": "639000000001"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "failure: malformed mobile number or mPIN (wrong shape, not wrong value)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "mpin: must be 4 to 6 digits"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "failure: wrong mPIN or non existing number. Both return the same code, so the response never reveals which accounts exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "INVALID_CREDENTIALS",
+                  "message": "Mobile number or MPIN is incorrect."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "description": "Sets an httpOnly access_token cookie. The JWT is deliberately not returned in the body, so page scripts cannot read it.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mobileNumber": {
+                    "type": "string",
+                    "pattern": "^(?:\\+63|63|0)?9\\d{9}$",
+                    "example": "09000000001",
+                    "description": "PH mobile number. Accepts 09171234567, +639171234567, 639171234567, and spaced or dashed variants. Always returned in the 639XXXXXXXXX form."
+                  },
+                  "mpin": {
+                    "type": "string",
+                    "pattern": "^\\d{4,6}$"
+                  }
+                },
+                "required": [
+                  "mobileNumber",
+                  "mpin"
+                ]
+              },
+              "example": {
+                "mobileNumber": "09000000001",
+                "mpin": "1111"
+              }
             }
           }
         }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "auth/logout",
+        "responses": {
+          "204": {
+            "description": "success: logged out, no body"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "description": "Clears the access_token cookie. Safe to call without a valid session."
+      }
+    },
+    "/transactions": {
+      "get": {
+        "summary": "transactions",
+        "parameters": [
+          {
+            "name": "direction",
+            "in": "query",
+            "description": "Omit for both inbound and outbound.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "inbound",
+                "outbound"
+              ]
+            },
+            "example": "inbound"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Capped at 100 so a caller cannot request the whole table.",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success: history page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "senderId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "receiverId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d+\\.\\d{2}$",
+                            "example": "1000.50",
+                            "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "enum": [
+                              "PHP"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "senderId",
+                          "receiverId",
+                          "amount",
+                          "currency",
+                          "createdAt"
+                        ]
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "hasMore": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "pagination"
+                  ]
+                },
+                "example": {
+                  "data": [
+                    {
+                      "id": "1b9c7f30-5a2d-4c81-9e6f-3a4b8c2d1e70",
+                      "senderId": "6f2b1c4e-9d3a-4f18-8a2b-77c0d9e1a4b5",
+                      "receiverId": "c3d4e5f6-1a2b-4c3d-9e8f-0a1b2c3d4e5f",
+                      "amount": "1000.50",
+                      "currency": "PHP",
+                      "createdAt": "2026-08-27T14:31:02.417Z"
+                    }
+                  ],
+                  "pagination": {
+                    "hasMore": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "failure: bad query parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "limit: Too big: expected number to be <=100"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "failure: missing, expired, or invalid access_token cookie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "You are not allowed to access this resource."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "The caller's transaction history, newest first. Covers both sides of a transfer unless narrowed with `direction`."
+      },
+      "post": {
+        "summary": "transactions",
+        "responses": {
+          "201": {
+            "description": "success: transfer recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "senderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "receiverId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+\\.\\d{2}$",
+                      "example": "1000.50",
+                      "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "enum": [
+                        "PHP"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "senderId",
+                    "receiverId",
+                    "amount",
+                    "currency",
+                    "createdAt"
+                  ]
+                },
+                "example": {
+                  "id": "1b9c7f30-5a2d-4c81-9e6f-3a4b8c2d1e70",
+                  "senderId": "6f2b1c4e-9d3a-4f18-8a2b-77c0d9e1a4b5",
+                  "receiverId": "c3d4e5f6-1a2b-4c3d-9e8f-0a1b2c3d4e5f",
+                  "amount": "1000.50",
+                  "currency": "PHP",
+                  "createdAt": "2026-08-27T14:31:02.417Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "failure: bad amount, unknown receiver, or a transfer to yourself",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "amount: must be a positive amount"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "failure: missing, expired, or invalid access_token cookie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "You are not allowed to access this resource."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "failure: the request is well formed but the transfer would breach a cap",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "DAILY_LIMIT_EXCEEDED",
+                  "message": "The amount requested exceeds your remaining daily limit."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Send money to another user. The limit check and the insert run in one database transaction under a row lock, so two concurrent transfers cannot both pass the same remaining budget. Caps are inclusive: a transfer landing exactly on the limit is allowed.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "receiverMobileNumber": {
+                    "type": "string",
+                    "pattern": "^(?:\\+63|63|0)?9\\d{9}$",
+                    "example": "09000000001",
+                    "description": "PH mobile number. Accepts 09171234567, +639171234567, 639171234567, and spaced or dashed variants. Always returned in the 639XXXXXXXXX form."
+                  },
+                  "amount": {
+                    "description": "Pesos, up to two decimal places. Accepts a number or a string; strings avoid float surprises on large amounts.",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "receiverMobileNumber",
+                  "amount"
+                ]
+              },
+              "example": {
+                "receiverMobileNumber": "09000000002",
+                "amount": "1000.50"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/usage": {
+      "get": {
+        "summary": "transactions/usage",
+        "responses": {
+          "200": {
+            "description": "success: current usage against configured caps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "currency": {
+                      "type": "string",
+                      "enum": [
+                        "PHP"
+                      ]
+                    },
+                    "daily": {
+                      "type": "object",
+                      "properties": {
+                        "limit": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "1000.50",
+                          "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                        },
+                        "used": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "1000.50",
+                          "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                        },
+                        "remaining": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "1000.50",
+                          "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "used",
+                        "remaining"
+                      ]
+                    },
+                    "monthly": {
+                      "type": "object",
+                      "properties": {
+                        "limit": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "1000.50",
+                          "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                        },
+                        "used": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "1000.50",
+                          "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                        },
+                        "remaining": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "1000.50",
+                          "description": "PHP amount as a decimal string, always two places. Held internally as centavos, so no float rounding ever reaches the wire."
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "used",
+                        "remaining"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "currency",
+                    "daily",
+                    "monthly"
+                  ]
+                },
+                "example": {
+                  "currency": "PHP",
+                  "daily": {
+                    "limit": "50000.00",
+                    "used": "1000.50",
+                    "remaining": "48999.50"
+                  },
+                  "monthly": {
+                    "limit": "500000.00",
+                    "used": "1000.50",
+                    "remaining": "498999.50"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "failure: missing, expired, or invalid access_token cookie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "You are not allowed to access this resource."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "failure: no limits configured for this account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                },
+                "example": {
+                  "code": "LIMITS_NOT_CONFIGURED",
+                  "message": "No transfer limits are configured for this account."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "transactions"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Remaining daily and monthly budget for the caller. Windows start at midnight and on the first of the month, both in Asia/Manila."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "access_token"
       }
     }
   }
