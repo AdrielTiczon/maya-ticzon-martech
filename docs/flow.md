@@ -170,12 +170,12 @@ A transfer is allowed when it does **not exceed** the remaining limit, so a send
 curl -X POST http://localhost:3001/transactions -b cookies.txt \
   -H "Content-Type: application/json" \
   -d '{ "receiverMobileNumber": "09000000002", "amount": "49899.50" }'
-# → 201 Created. Remaining is now exactly 0.00
+# -> 201 Created. Remaining is now exactly 0.00
 
 curl -X POST http://localhost:3001/transactions -b cookies.txt \
   -H "Content-Type: application/json" \
   -d '{ "receiverMobileNumber": "09000000002", "amount": "0.01" }'
-# → 422 DAILY_LIMIT_EXCEEDED
+# -> 422 DAILY_LIMIT_EXCEEDED
 ```
 
 ---
@@ -193,7 +193,7 @@ curl "http://localhost:3001/transactions?direction=outbound&limit=20&offset=0" -
 | Parameter | Values | Default | Meaning |
 |---|---|---|---|
 | `direction` | `outbound` \| `inbound` | both | Money sent / money received |
-| `limit` | 1–100 | 20 | Page size |
+| `limit` | 1-100 | 20 | Page size |
 | `offset` | ≥ 0 | 0 | Rows to skip |
 
 **Response:** `200 OK`

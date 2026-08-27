@@ -82,7 +82,7 @@ Coverage is deliberately narrow rather than broad, aimed at the claims that woul
 - **No registration.** The brief leaves user creation to the implementer, so users are seeded.
 - **Append-only ledger.** A row exists only for a transfer that succeeded, so there is no `status` column. Rejected transfers return an error and write nothing.
 - **Money is integer centavos.** `BIGINT` throughout, never a float. Decimal input is parsed as a string, since `19.99 * 100` in JavaScript is not `1999`. Amounts cross the API as decimal strings with an explicit `PHP` field.
-- **Mobile numbers are normalized to E.164.** `0917…`, `+63917…`, `63917…` and `917…` are all accepted and stored as `639XXXXXXXXX`.
+- **Mobile numbers are normalized to E.164.** `0917...`, `+63917...`, `63917...` and `917...` are all accepted and stored as `639XXXXXXXXX`.
 - **Timezone is a business rule, not configuration.** `Asia/Manila` is a constant and the boundaries are written into the SQL, so correctness never depends on the container's `TZ` or the Postgres session timezone.
 
 ## Failure cases
